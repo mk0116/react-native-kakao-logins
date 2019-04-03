@@ -76,7 +76,7 @@ RCT_EXPORT_METHOD(getProfile:(RCTResponseSenderBlock)callback) {
     }];
 }
 
-[RCT_EXPORT_METHOD(loginSilently:(RCTResponseSenderBlock)callback) {
+ RCT_EXPORT_METHOD(loginSilently:(RCTResponseSenderBlock)callback) {
     [KOSessionTask accessTokenInfoTaskWithCompletionHandler:^(KOAccessTokenInfo *accessTokenInfo, NSError *error) {
         if (error) {
             switch (error.code) {
@@ -94,7 +94,7 @@ RCT_EXPORT_METHOD(getProfile:(RCTResponseSenderBlock)callback) {
         } else {
             // 성공 (토큰이 유효함)
             NSLog(@"남은 유효시간: %@ (단위: ms)", accessTokenInfo.expiresInMillis);
-            callback(@[[NSNull null], @[NSString stringWithFormat:accessTokenInfo]]);
+            callback(@[[NSNull null], accessTokenInfo]);
         }
     }];
 }
