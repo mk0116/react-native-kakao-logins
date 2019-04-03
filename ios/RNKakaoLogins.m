@@ -77,26 +77,20 @@ RCT_EXPORT_METHOD(getProfile:(RCTResponseSenderBlock)callback) {
 }
 
  RCT_EXPORT_METHOD(loginSilently:(RCTResponseSenderBlock)callback) {
-    [KOSessionTask accessTokenInfoTaskWithCompletionHandler:^(KOAccessTokenInfo *accessTokenInfo, NSError *error) {
-        if (error) {
-            switch (error.code) {
-                case KOErrorDeactivatedSession:
-                    // 세션이 만료된(access_token, refresh_token이 모두 만료된 경우) 상태
-                    RCTLogInfo(@"Error=%@", error);                    
-                    callback(@[@"Access to Kakao token session expired.", [NSNull null]]);
-                    break;
-                default:
-                    // 예기치 못한 에러. 서버 에러
-                    RCTLogInfo(@"Error=%@", error);                    
-                    callback(@[@"Error while getting Kakao token.", [NSNull null]]);
-                    break;
-            }
+    KOSession *session = [KOSession sharedSession];
+
+    [session refreshAccessTokenWithCompletionHandler:^(NSError *error) {
+        if ([session isOpen]) {
+            NSString* token = session.token.accessToken;
+            NSString* result = [NSString stringWithFormat:@"{\"token\": \"%@\"}", token];
+
+            callback(@[[NSNull null], result]);
         } else {
-            // 성공 (토큰이 유효함)
-            NSLog(@"남은 유효시간: %@ (단위: ms)", accessTokenInfo.expiresInMillis);
-            callback(@[[NSNull null], accessTokenInfo]);
+            RCTLogInfo(@"Error=%@", error);
+            callback(@[@"refreshAccessToken failed.\n", [NSNull null]]);
         }
     }];
+
 }
 
 @end
