@@ -38,7 +38,7 @@ const KakaoLogins = {
     RNKakaoLogins.getProfile(processNativeOutput(callback));
   },
   loginSilently(callback) {
-    RNKakaoLogins.loginSilently(processNativeOutput(callback));
+    RNKakaoLogins.requestAccessToken(processNativeOutput(callback));
   },
 };
 

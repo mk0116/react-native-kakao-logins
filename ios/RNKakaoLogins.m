@@ -76,7 +76,7 @@ RCT_EXPORT_METHOD(getProfile:(RCTResponseSenderBlock)callback) {
     }];
 }
 
- RCT_EXPORT_METHOD(loginSilently:(RCTResponseSenderBlock)callback) {
+ RCT_EXPORT_METHOD(requestAccessToken:(RCTResponseSenderBlock)callback) {
     KOSession *session = [KOSession sharedSession];
 
     [session refreshAccessTokenWithCompletionHandler:^(NSError *error) {
