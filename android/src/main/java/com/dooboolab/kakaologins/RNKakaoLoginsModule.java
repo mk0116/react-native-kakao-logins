@@ -27,7 +27,10 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.UiThreadUtil;
+import com.kakao.auth.AuthService;
+import com.kakao.auth.ApiResponseCallback;
 import com.kakao.auth.AccessTokenCallback;
+import com.kakao.auth.network.response.AccessTokenInfoResponse;
 import com.kakao.auth.AuthType;
 import com.kakao.auth.ISessionCallback;
 import com.kakao.auth.KakaoSDK;
@@ -115,14 +118,14 @@ public class RNKakaoLoginsModule extends ReactContextBaseJavaModule implements A
           가능한 auth type들을 유저에게 보여주기 위한 준비.
          */
     return new ArrayAdapter<Item>(
-        reactContext,
-        android.R.layout.select_dialog_item,
-        android.R.id.text1, authItems){
+            reactContext,
+            android.R.layout.select_dialog_item,
+            android.R.id.text1, authItems){
       @Override
       public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
           LayoutInflater inflater = (LayoutInflater) getContext()
-              .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                  .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
           convertView = inflater.inflate(com.kakao.usermgmt.R.layout.layout_login_item, parent, false);
         }
         ImageView imageView = (ImageView) convertView.findViewById(com.kakao.usermgmt.R.id.login_method_icon);
@@ -221,6 +224,48 @@ public class RNKakaoLoginsModule extends ReactContextBaseJavaModule implements A
       final Dialog dialog = createLoginDialog(authItems, adapter);
       dialog.show();
     }
+  }
+
+  @ReactMethod
+  private void requestAccessToken(final Callback cb) {
+//    loginCallback = cb;
+//    if(Session.getCurrentSession().isOpened() || Session.getCurrentSession().isOpenable()) {
+//      final List<AuthType> authTypes = getAuthTypes();
+//      if (authTypes.size() == 1) {
+//        Session.getCurrentSession().open(authTypes.get(0), reactContext.getCurrentActivity());
+//      } else {
+//        final Item[] authItems = createAuthItemArray(authTypes);
+//        ListAdapter adapter = createLoginAdapter(authItems);
+//        final Dialog dialog = createLoginDialog(authItems, adapter);
+//        dialog.show();
+//      }
+//    }
+    AuthService.getInstance().requestAccessTokenInfo(new ApiResponseCallback<AccessTokenInfoResponse>() {
+      @Override
+      public void onSessionClosed(ErrorResult errorResult) {
+        Logger.e("requestAccessTokenInfo>>onSessionClosed");
+        cb.invoke("Session is closed", null);
+//        redirectLoginActivity(self);
+      }
+
+      @Override
+      public void onNotSignedUp() {
+        Logger.e("requestAccessTokenInfo>>onNotSignedUp");
+        // not happened
+      }
+
+      @Override
+      public void onFailure(ErrorResult errorResult) {
+        Logger.e("failed to get access token info. msg=" + errorResult);
+        cb.invoke("failed to get access token info. msg=" + errorResult, null);
+      }
+
+      @Override
+      public void onSuccess(AccessTokenInfoResponse accessTokenInfoResponse) {
+        Logger.e("Success to get access token info.");
+        cb.invoke(null, "{\"token\": \"" + Session.getCurrentSession().getAccessToken() + "\"}");
+      }
+    });
   }
 
   @ReactMethod
