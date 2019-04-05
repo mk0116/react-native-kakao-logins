@@ -59,6 +59,7 @@ public class RNKakaoLoginsModule extends ReactContextBaseJavaModule implements A
   private final ReactApplicationContext reactContext;
   public static SessionCallback callback;
   private static Callback loginCallback;
+  private static Callback requestAccessTokenCallback;
 
   private static class Item {
     final int textId;
@@ -228,18 +229,6 @@ public class RNKakaoLoginsModule extends ReactContextBaseJavaModule implements A
 
   @ReactMethod
   private void requestAccessToken(final Callback cb) {
-//    loginCallback = cb;
-//    if(Session.getCurrentSession().isOpened() || Session.getCurrentSession().isOpenable()) {
-//      final List<AuthType> authTypes = getAuthTypes();
-//      if (authTypes.size() == 1) {
-//        Session.getCurrentSession().open(authTypes.get(0), reactContext.getCurrentActivity());
-//      } else {
-//        final Item[] authItems = createAuthItemArray(authTypes);
-//        ListAdapter adapter = createLoginAdapter(authItems);
-//        final Dialog dialog = createLoginDialog(authItems, adapter);
-//        dialog.show();
-//      }
-//    }
     AuthService.getInstance().requestAccessTokenInfo(new ApiResponseCallback<AccessTokenInfoResponse>() {
       @Override
       public void onSessionClosed(ErrorResult errorResult) {
@@ -273,21 +262,21 @@ public class RNKakaoLoginsModule extends ReactContextBaseJavaModule implements A
     UserManagement.getInstance().requestLogout(new LogoutResponseCallback() {
       @Override
       public void onSessionClosed(ErrorResult errorResult) {
-        Log.w(TAG, "sessionClosed!!\n" + errorResult.toString());
+        Log.w(TAG, "Kakao - sessionClosed!!\n" + errorResult.toString());
         cb.invoke(errorResult.toString(), null);
       }
       @Override
       public void onNotSignedUp() {
-        Log.w(TAG, "NotSignedUp!!");
+        Log.w(TAG, "Kakao - NotSignedUp!!");
       }
       @Override
       public void onSuccess(Long result) {
-        Log.d(TAG, "Logout!");
+        Log.d(TAG, "Kakao - Logout!");
         cb.invoke(null, String.valueOf(result));
       }
       @Override
       public void onCompleteLogout() {
-        Log.d(TAG, "Complete Logout!");
+        Log.d(TAG, "Kakao - Complete Logout!");
         cb.invoke(null, "Logged out");
       }
     });
@@ -335,46 +324,6 @@ public class RNKakaoLoginsModule extends ReactContextBaseJavaModule implements A
       }
     });
 
-    /*
-    UserManagement.getInstance().requestMe(new MeResponseCallback() {
-      @Override
-      public void onFailure(ErrorResult errorResult) {
-        String message = "failed to get user info. msg=" + errorResult;
-        Log.e(TAG, message);
-        cb.invoke(message, null);
-      }
-
-      @Override
-      public void onSessionClosed(ErrorResult errorResult) {
-        Log.e(TAG, "sessionClosed");
-      }
-
-      @Override
-      public void onSuccess(UserProfile userProfile) {
-        try {
-          JSONObject jsonObject = new JSONObject();
-          jsonObject.put("nickname", userProfile.getNickname());
-          jsonObject.put("email", userProfile.getEmail());
-          jsonObject.put("emailVerified", userProfile.getEmailVerified());
-          jsonObject.put("thumbImagePath", userProfile.getThumbnailImagePath());
-          jsonObject.put("profileImagePath", userProfile.getProfileImagePath());
-          jsonObject.put("uuid", userProfile.getUUID());
-          jsonObject.put("serviceUserId", userProfile.getServiceUserId());
-          jsonObject.put("remainingInviteCount", userProfile.getRemainingInviteCount());
-          jsonObject.put("remainingGroupMsgCount", userProfile.getRemainingGroupMsgCount());
-          jsonObject.put("properties", userProfile.getProperties());
-          cb.invoke(null, jsonObject.toString());
-        } catch (JSONException e) {
-          cb.invoke(e.toString(), null);
-        }
-      }
-
-      @Override
-      public void onNotSignedUp() {
-        cb.invoke("NotSignedUp", null);
-      }
-    });
-    */
   }
 
   public static class SessionCallback implements ISessionCallback {
